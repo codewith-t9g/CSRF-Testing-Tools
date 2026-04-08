@@ -12,6 +12,21 @@ I am assuming that you have a good understanding of what a CSRF attack is and ca
 -- Using the Tools --
 The idea here is to use FormBuilder to create html forms that mimic the forms on the site that you're testing. FormGrabber makes this much easier by allowing you to harvest forms from existing pages and import them into FormBuilder.
 
+IMPORTANT - Referer Header Issue:
+When using formbuilder.html as a local file (file:// protocol), browsers do not send the HTTP Referer header for security reasons. This may affect CSRF testing. To ensure proper testing with Referer headers:
+
+SOLUTION: Use a Local Web Server
+
+Python (Recommended - works on most systems):
+  $ python3 server.py
+  → Open: http://localhost:8000/formbuilder.html
+
+Node.js:
+  $ node server.js
+  → Open: http://localhost:8080/formbuilder.html
+
+Why this works: The HTTP/HTTPS protocol allows Referer headers. The file:// protocol blocks them.
+
 To use:
 1. Set up the FormGrabber bookmarklet:
  1a. Since I haven't set up hosting for the FormGrabber js file, you will need to host this file on a web site somewhere -- if you try to link to the file locally, the bookmarklet won't work due to security errors.
@@ -23,11 +38,214 @@ To use:
  2c. Click Grab Forms!
  2d. Click in one of the text area inputs on the right side and copy the contents (it should automagically select everything in the box on the first click).
 3. Build a form and attempt a CSRF attack:
- 3a. Load up the FormBuilder.
+ 3a. Load up the FormBuilder (via local server or web server for proper Referer handling).
  3b. Paste the contents of the exported form from FormGrabber into the Load/Export Form box and click 'Load From Above'.
  3c. Enter data into the form and click 'Attempt CSRF Exploit'. The resulting page should load in the 'Result' area at the bottom of the page.
  
 Make sure you use formbuilder.html as a file on your computer or host it on a different domain than the site against which you are testing, otherwise the test isn't really a valid csrf attack.
+
+
+-- STEP-BY-STEP CSRF ATTACK GUIDE --
+
+Step 1: Start the FormBuilder Server
+================================
+Choose your preferred method to start a local web server:
+
+METHOD A - Python:
+  $ python3 server.py
+  Output: "Server running at http://localhost:8000/"
+  
+METHOD B - Node.js:
+  $ node server.js
+  Output: "Server running at http://localhost:8080/"
+
+Step 2: Access FormBuilder
+==========================
+Open your web browser and navigate to:
+  - Python: http://localhost:8000/formbuilder.html
+  - Node.js: http://localhost:8080/formbuilder.html
+
+You should see the CSRF FormBuilder interface with:
+  - Build Form from Scratch (left panel)
+  - Load/Export Form (right panel)
+  - Spoofed Form section
+  - Result iframe at the bottom
+
+Step 3: Prepare the FormGrabber Bookmarklet
+============================================
+You have two options:
+
+OPTION A - Using FormGrabber Bookmarklet (Recommended):
+  1. Edit formgrabber_bookmarklet.html and replace:
+     <path_to_formgrabber.js> 
+     with the URL where you hosted formgrabber.js
+     (Example: http://yourserver.com/formgrabber.js)
+  
+  2. Open formgrabber_bookmarklet.html in your browser
+  
+  3. Click the "Grab Forms!" link and drag it to your bookmarks bar
+  
+  4. Navigate to the target website that has forms you want to test
+  
+  5. Click the bookmarklet in your bookmarks bar
+  
+  6. A grey box titled "CSRF FormGrabber" should appear
+  
+  7. Click "Grab Forms!" button in the grey box
+  
+  8. All forms on the page will be extracted and displayed in tables
+  
+  9. Copy the text from the textarea for the form you want to test
+  
+  10. Paste it into the FormBuilder's "Load/Export Form" box
+
+OPTION B - Manually Building the Form:
+  1. Inspect the target website's HTML source
+  2. Identify the form you want to test:
+     - Form action URL (where it submits)
+     - Form method (GET or POST)
+     - Form fields (input names and values)
+     - Form encoding type (if applicable)
+  
+  3. In FormBuilder, use the "Build Form from Scratch" section:
+     - Enter the target URL in the "URL:" field
+     - Select the HTTP method (GET or POST)
+     - Select encoding type if needed (usually "none")
+     - Add each form field by entering Name and Value
+     - Click "Add field" for each field
+
+Step 4: Load the Grabbed Form into FormBuilder
+================================================
+1. Copy the form data from FormGrabber (from Step 3, Option A)
+2. In FormBuilder, find the "Load/Export Form" section (right panel)
+3. Paste the form data into the textarea
+4. Click the "Load from Above" button
+5. The form should now appear in the "Spoofed Form" section
+
+Step 5: Modify Form Fields (Optional)
+======================================
+Once the form is loaded, you can:
+  - Click on any input value to edit it
+  - Click the "← Remove This Field" link to delete a field
+  - Add new fields using the "Build Form from Scratch" section
+  - Change the target URL in the URL field
+  - Change the HTTP method (GET/POST)
+  - Change the encoding type
+
+Example modifications:
+  - Change an admin user ID to a different user
+  - Change an email address
+  - Change password fields
+  - Add hidden fields with malicious values
+
+Step 6: Review the Spoofed Form
+================================
+Before executing the attack:
+  1. Verify all fields have the correct values
+  2. Check the form action URL is correct
+  3. Verify the method is correct (GET/POST)
+  4. Review the encoding type if file upload is involved
+
+The form preview shows:
+  - All visible and hidden fields
+  - Field values
+  - Remove links for each field
+
+Step 7: Execute the CSRF Attack
+================================
+1. Click the "Attempt CSRF Exploit" button (red button)
+2. The form will automatically submit to the target URL
+3. The response will load in the "Result:" iframe at the bottom
+4. Examine the result for:
+   - Success/error messages from the target server
+   - Page redirects
+   - Changes in the target application
+   - Confirmation messages
+
+Step 8: Analyze the Results
+============================
+In the Result iframe, you should see:
+  - Server response HTML
+  - Error messages (if any)
+  - Confirmation of the action (if CSRF succeeded)
+  - Session information
+  - Cookies or authentication status
+
+IMPORTANT INDICATORS OF CSRF VULNERABILITY:
+  - Form submits without requiring CSRF token validation
+  - Form submits with authentication cookies (if you were logged in)
+  - Server responds with success message
+  - The action was performed on the target site without explicit user action
+  - No verification steps or additional authentication required
+
+Step 9: Export/Save Form Configuration
+========================================
+To save your form for later use:
+  1. Click "Export to Above" button
+  2. The serialized form data will appear in the textarea
+  3. Copy and save this data
+  4. Later, paste it back and click "Load from Above" to restore
+
+Example exported form (JSON format):
+  [
+    "<form content>",
+    "http://target.example.com/action",
+    "POST",
+    ""
+  ]
+
+WHAT YOU'RE TESTING FOR:
+=======================
+This tool helps identify if a web application is vulnerable to CSRF by:
+
+1. Cross-Domain Form Submission:
+   - Can the form on your domain submit to a different domain?
+   - Does the target site accept requests from external domains?
+
+2. Session Hijacking:
+   - If you're logged into the target site, does the attack use your authentication?
+   - Does the target site process the form using your active session?
+
+3. Missing CSRF Tokens:
+   - Does the target site verify a unique token for each form submission?
+   - If no token validation, the site is vulnerable
+
+4. No Origin/Referer Validation:
+   - Does the target site check the HTTP Referer header?
+   - Does it validate the Origin header (new security control)?
+
+5. Simple Token Validation:
+   - Is the CSRF token static or easily guessable?
+   - Can you bypass token validation mechanisms?
+
+SECURITY BEST PRACTICES:
+========================
+To fix CSRF issues in web applications:
+  - Implement CSRF tokens (unique per session/request)
+  - Validate tokens on every form submission
+  - Use SameSite cookie attributes
+  - Validate Origin and Referer headers
+  - Use double submit cookies pattern
+  - Require re-authentication for sensitive operations
+  - Implement Content Security Policy (CSP)
+
+LEGAL AND ETHICAL NOTICE:
+=========================
+This tool is intended ONLY for:
+  - Authorized security testing
+  - Your own applications
+  - Applications you have written permission to test
+  - Educational purposes in controlled environments
+
+NEVER use this tool to:
+  - Attack systems without authorization (ILLEGAL)
+  - Modify data on systems you don't own
+  - Cause harm to others' applications
+  - Bypass security on public websites
+
+Unauthorized network access is illegal under the Computer Fraud 
+and Abuse Act (CFAA) in the United States and similar laws worldwide.
+
 
 
    Copyright 2010 iContact

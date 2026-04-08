@@ -1,5 +1,7 @@
 <html>
 <head>
+	<!-- Force browsers to send Referer header with form submissions -->
+	<meta name="referrer" content="always">
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
 	<script>
 
@@ -95,58 +97,231 @@
 
 	</script>
 	<style type="text/css">
+	* {
+		box-sizing: border-box;
+	}
+	
 	body {
-		font-family: sans-serif;
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+		margin: 0;
+		padding: 20px;
+		color: #333;
 	}
 	
 	h1 {
 		width: 100%;
+		color: #2c3e50;
+		border-bottom: 3px solid #e74c3c;
+		padding-bottom: 10px;
+		margin-top: 0;
 	}
-		
+	
+	h2 {
+		color: #34495e;
+		font-size: 1.3em;
+		margin-top: 20px;
+	}
+	
+	p {
+		background: #fff3cd;
+		border-left: 4px solid #ffc107;
+		padding: 12px;
+		border-radius: 4px;
+		margin: 10px 0;
+	}
+	
+	p strong {
+		color: #e74c3c;
+	}
+	
 	fieldset {
 		margin: 20px;
+		padding: 20px;
+		border: 2px solid #bdc3c7;
+		border-radius: 8px;
+		background: white;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 	}
+	
+	legend {
+		font-weight: bold;
+		color: #2c3e50;
+		background: white;
+		padding: 5px 10px;
+		border-radius: 4px;
+	}
+	
 	.column1 {
-		float:left;
+		float: left;
+		width: 48%;
+		margin-right: 2%;
 	}
+	
 	.column2 {
-		float:left;
+		float: left;
+		width: 48%;
+		margin-left: 2%;
 	}
+	
 	.nocolumn {
 		position: relative;
 		top: 20px;
-		clear:both;
+		clear: both;
 	}
+	
 	#savebox {
-		width:400px;
-		height:200px;
+		width: 100%;
+		height: 200px;
+		padding: 10px;
+		border: 2px solid #bdc3c7;
+		border-radius: 4px;
+		font-family: 'Courier New', monospace;
+		font-size: 12px;
+		resize: vertical;
 	}
 	
 	.builderElement {
-		padding: 5px;
+		padding: 12px 0;
+		border-bottom: 1px solid #ecf0f1;
+	}
+	
+	.builderElement:last-child {
+		border-bottom: none;
+	}
+	
+	.builderElement input[type="text"],
+	.builderElement select {
+		padding: 8px 10px;
+		border: 1px solid #bdc3c7;
+		border-radius: 4px;
+		margin: 5px 5px 5px 0;
+		font-size: 14px;
+	}
+	
+	.builderElement input[type="text"]:focus,
+	.builderElement select:focus {
+		outline: none;
+		border-color: #3498db;
+		box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+	}
+	
+	#url {
+		width: 100%;
+		min-width: 400px;
+	}
+	
+	button {
+		background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+		color: white;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 14px;
+		font-weight: bold;
+		margin: 5px 5px 5px 0;
+		transition: all 0.3s ease;
+	}
+	
+	button:hover {
+		background: linear-gradient(135deg, #2980b9 0%, #1f618d 100%);
+		box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+		transform: translateY(-2px);
+	}
+	
+	button:active {
+		transform: translateY(0);
+	}
+	
+	#csrf-submit {
+		background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+		padding: 12px 30px;
+		font-size: 16px;
+	}
+	
+	#csrf-submit:hover {
+		background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
 	}
 	
 	.formGrabberFormElement {
 		clear: both;
-		padding: 5px 0px 10px 5px;
-		vertical-align: top;
+		padding: 10px;
+		margin: 10px 0;
+		border: 1px solid #ecf0f1;
+		border-radius: 4px;
+		background: #f8f9fa;
 	}
+	
 	.formGrabberFormElement label {
 		display: block;
+		font-weight: bold;
+		margin-bottom: 5px;
+		color: #2c3e50;
 	}
-	.formGrabberFormElement input, .formGrabberFormElement textarea, .formGrabberFormElement select {
-		display: inline-block;
+	
+	.formGrabberFormElement input,
+	.formGrabberFormElement textarea,
+	.formGrabberFormElement select {
+		display: block;
+		width: 100%;
+		padding: 8px;
+		margin: 5px 0;
+		border: 1px solid #bdc3c7;
+		border-radius: 4px;
+		font-size: 14px;
 	}
+	
+	.formGrabberFormElement input:focus,
+	.formGrabberFormElement textarea:focus,
+	.formGrabberFormElement select:focus {
+		outline: none;
+		border-color: #3498db;
+		box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+	}
+	
 	a.remove {
-		clear:both;
-		float:right;
-		padding-left: 10px;
+		display: inline-block;
+		clear: both;
+		float: right;
+		padding: 5px 10px;
+		color: #e74c3c;
+		text-decoration: none;
+		font-size: 12px;
+		font-weight: bold;
+		cursor: pointer;
 	}
+	
+	a.remove:hover {
+		color: #c0392b;
+		text-decoration: underline;
+	}
+	
 	#csrf-form {
-		float:left;
+		float: left;
+		width: 100%;
 	}
-	#url{
-		width:500px;
+	
+	#form {
+		border: 1px solid #ecf0f1;
+		padding: 15px;
+		background: #f8f9fa;
+		border-radius: 4px;
+		margin-bottom: 15px;
+	}
+	
+	iframe {
+		border: 2px solid #bdc3c7;
+		border-radius: 4px;
+		background: white;
+	}
+	
+	@media (max-width: 1024px) {
+		.column1, .column2 {
+			float: none;
+			width: 100%;
+			margin: 20px 0;
+		}
 	}
 	</style>
 </head>
